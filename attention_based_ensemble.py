@@ -165,7 +165,7 @@ def run_transformer_decoder(metadata_prev, metadata, gt, n_cls, n_clfs_prev, n_c
     train_dataset = CustomDataset(metadata_torch, metadata_prev_torch, gt_torch)    
     train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [0.8, 0.2])
     
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     
     loss_fn = nn.CrossEntropyLoss()

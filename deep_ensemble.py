@@ -209,7 +209,10 @@ class DeepEnsemble:
                 enc = np.zeros((n_clfs_prev+1, n_clfs))
                 
                 # Keep a percentage of classifiers with the highest attention scores (for each column)
-                n_keep_attn = int(n_clfs*config['attention_keep_percent'])
+                # n_keep_attn = int(n_clfs*config['attention_keep_percent'])
+                
+                # Keep a number of classifiers with the highest attention scores (for each column)
+                n_keep_attn = config['n_keep_attn']
                 print("n_keep_attn: %d" % (n_keep_attn))
                 for idx_col in range(n_clfs):
                     attn_col = attn_score_all_normalized[:, idx_col]

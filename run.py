@@ -28,7 +28,8 @@ def main():
     config['attention_n_epoch'] = 500
     # config['attention_n_epoch'] = 10
     config['attention_batch_size'] = 128
-    config['attention_keep_percent'] = 0.2
+    # config['attention_keep_percent'] = 0.2
+    config['n_keep_attn'] = 1
     
     # config['optimizer_name'] = 'GA' # Binary Genetic Algorithm
     # config['optimizer_name'] = 'PSO' # Binary Particle Swarm Optimization
@@ -46,7 +47,8 @@ def main():
     print('max_layers = ', config['max_layers'])   
     print('attention_n_epoch = ', config['attention_n_epoch'])
     print('attention_batch_size = ', config['attention_batch_size'])
-    print('attention_keep_percent = ', config['attention_keep_percent']) 
+    # print('attention_keep_percent = ', config['attention_keep_percent']) 
+    print('n_keep_attn = ', config['n_keep_attn']) 
     print('____________________')
 
     config['meta_clf'] = SumRuleCombiner()

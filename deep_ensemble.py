@@ -187,8 +187,8 @@ class DeepEnsemble:
                 plot_result_path = pjoin("result", self.dataset_name, "train_val_loss_layer_%d.png" % (layer_idx))
                 plot_training_and_validation_loss(train_loss_list, val_loss_list, plot_result_path)
                 
-                attn_score_all = np.sum(attn_score, axis=0)
-                attn_score_all = np.transpose(attn_score_all)
+                attn_score_all = np.sum(attn_score, axis=0) # (n_clfs, n_clfs_prev)
+                attn_score_all = np.transpose(attn_score_all) # (n_clfs_prev, n_clfs)
                 np.savetxt(
                     pjoin("result", self.dataset_name, "attention_unnormalized_layer_%d.txt" % (layer_idx)),
                     attn_score_all,

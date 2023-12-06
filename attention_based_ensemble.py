@@ -95,30 +95,12 @@ class TransformerDecoder(nn.Module):
         self.embedding_dim = embedding_dim
         self.ff_dim = ff_dim
         
-        # self.ff_prev = nn.Linear(n_cls, n_cls)
-        # self.ff_curr = nn.Linear(n_cls, n_cls)        
-        # self.encoder_attention = ScaledDotProductAttention(embedding_dim)
-        # self.ff1 = nn.Linear(n_cls*n_clfs, embedding_dim)
-        # self.feed_forward = nn.Sequential(
-            # nn.Linear(embedding_dim, ff_dim),
-            # nn.ReLU(),
-            # nn.Linear(ff_dim, embedding_dim),
-        # )
-        # self.dropout2 = nn.Dropout(dropout)
-        # self.dropout3 = nn.Dropout(dropout)
-        # self.norm2 = Norm(n_cls*n_clfs)
-        # self.norm3 = Norm(embedding_dim)        
-        # self.final_linear = nn.Linear(embedding_dim, n_cls)
-        # self.softmax = nn.Softmax(dim=1)        
-        # self.ff_temp = nn.Linear(n_clfs*(n_clfs_prev+n_cls), embedding_dim)
-        
-        
-        
         self.ff_prev = nn.Linear(n_cls, embedding_dim)
         self.ff_curr = nn.Linear(n_cls, embedding_dim)        
         self.encoder_attention = ScaledDotProductAttention(embedding_dim)
         # self.ff_temp = nn.Linear(n_clfs*(n_clfs_prev+n_cls), embedding_dim)
-        self.ff_temp = nn.Linear(n_clfs*(n_clfs_prev+embedding_dim), embedding_dim)
+        # self.ff_temp = nn.Linear(n_clfs*(n_clfs_prev+embedding_dim), embedding_dim)
+        self.ff_temp = nn.Linear(n_clfs*(n_clfs_prev+embedding_dim), n_cls)
         
     def forward(self, metadata, metadata_prev):
         # metadata_prev_ff = self.ff_prev(metadata_prev)
@@ -136,10 +118,47 @@ class TransformerDecoder(nn.Module):
         x1 = torch.cat((context, attn), dim=2)
         x1 = x1.view(-1, self.n_clfs*(self.embedding_dim+self.n_clfs_prev))
         x4 = self.ff_temp(x1)
-        
+        # set_trace()
         return (x4, attn)
       
 def run_transformer_decoder(metadata_prev, metadata, gt, n_cls, n_clfs_prev, n_clfs, n_epoch=500, batch_size=128):
+    """ Run the attention-based module for ensemble selection
+
+    Parameters
+    ----------
+    metadata_prev : Numpy array.   
+        The meta-data of the previous layer, with size (n_inst, n_clfs_prev, n_cls), where
+        n_inst is the number of instances, n_clfs_prev is the number of chosen classifiers in the 
+        previous layer, and n_cls is the number of classes.
+    metadata : Numpy array.   
+        The meta-data of the current layer, with size (n_inst, n_clfs, n_cls), where
+        n_inst is the number of instances, n_clfs is the number of all classifiers in the 
+        current layer (we run with all classifiers chosen first to get this array), and
+        n_cls is the number of classes.    
+    gt: Numpy array.
+        The ground truth, of size (n_inst, 1).
+    n_cls: Integer.
+        The number of classes.
+    n_clfs_prev: Integer.
+        The number of chosen classifiers in the previous layer.
+    n_clfs: Integer.
+        The total number of classifiers in the current layer.
+    n_epoch: Integer, optional.
+        The number of epochs to run for training (default is 500).
+    batch_size: Integer, optional.
+        The batch size (default is 128).    
+
+    Returns
+    -------
+    attn: Numpy array.
+        The attention matrix which shows the attention coefficients between the classifiers 
+        of the previous and current layer in the ensemble, with size (n_inst, n_clfs, n_clfs_prev).
+    train_loss_list: List of floats.
+        The training loss.
+    val_loss_list: List of floats.
+        The validation loss.
+    """
+
     n_inst = metadata_prev.shape[0]
     metadata_prev_rs = metadata_prev.reshape((n_inst, n_clfs_prev, n_cls))
     metadata_rs = metadata.reshape((n_inst, n_clfs, n_cls))
@@ -266,3 +285,88 @@ def run_transformer_decoder(metadata_prev, metadata, gt, n_cls, n_clfs_prev, n_c
     attn = attn.cpu().detach().numpy()    
     return attn, train_loss_list, val_loss_list
     
+def test_1():
+    print("")
+    print("")
+    print("")
+    print("test_1")
+    
+    n_inst = 11
+    n_clfs_prev = 4    
+    n_clfs = 7
+    n_cls = 3
+    
+    metadata_prev = torch.rand((n_inst, n_clfs_prev, n_cls))
+    metadata = torch.rand((n_inst, n_clfs, n_cls))
+    attn_module = ScaledDotProductAttention(1)
+    context, attn = attn_module(metadata_prev, metadata, metadata)
+    
+    print("n_inst = %d" % (n_inst))
+    print("n_clfs_prev = %d" % (n_clfs_prev))
+    print("n_clfs = %d" % (n_clfs))
+    print("n_cls = %d" % (n_cls))
+    
+    print(metadata_prev.shape)
+    print(metadata.shape)
+    print(context.shape)
+    print(attn.shape)
+
+def test_2():
+    print("")
+    print("")
+    print("")
+    print("test_2")
+    
+    n_inst = 11
+    n_clfs_prev = 4    
+    n_clfs = 7
+    n_cls = 3
+    
+    DEVICE = "cpu"
+    
+    metadata_prev_torch_batch = torch.rand((n_inst, n_clfs_prev, n_cls)).to(DEVICE, dtype=float)
+    metadata_torch_batch = torch.rand((n_inst, n_clfs, n_cls)).to(DEVICE, dtype=float)
+    
+    model = TransformerDecoder(n_cls, n_clfs_prev, n_clfs, embedding_dim=64, ff_dim=64).to(DEVICE, dtype=float)
+    (output_batch, attn) = model(metadata_torch_batch, metadata_prev_torch_batch)
+    
+    print("n_inst = %d" % (n_inst))
+    print("n_clfs_prev = %d" % (n_clfs_prev))
+    print("n_clfs = %d" % (n_clfs))
+    print("n_cls = %d" % (n_cls))
+    
+    print("output_batch.shape = %s" % (output_batch.shape,))
+    print("attn.shape = %s" % (attn.shape,))
+
+def test_3():
+    print("")
+    print("")
+    print("")
+    print("test_3")
+    
+    n_inst = 20
+    n_clfs_prev = 4    
+    n_clfs = 7
+    n_cls = 3
+    n_epoch = 3
+    batch_size = 4
+    
+    metadata_prev = np.random.rand(n_inst, n_clfs_prev, n_cls)
+    metadata = np.random.rand(n_inst, n_clfs, n_cls)
+    gt = np.ones((n_inst), dtype=np.int32)    
+    attn, train_loss_list, val_loss_list = run_transformer_decoder(metadata_prev, metadata, gt, n_cls, n_clfs_prev, n_clfs,
+        n_epoch=n_epoch, batch_size=batch_size)
+        
+    print("n_inst = %d" % (n_inst))
+    print("n_clfs_prev = %d" % (n_clfs_prev))
+    print("n_clfs = %d" % (n_clfs))
+    print("n_cls = %d" % (n_cls))
+    print("attn.shape = %s" % (attn.shape,))    
+    
+def main():
+    test_1()
+    test_2()
+    test_3()
+    
+if __name__ == '__main__':
+    main()

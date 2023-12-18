@@ -29,7 +29,7 @@ def main():
     # config['attention_n_epoch'] = 10
     config['attention_batch_size'] = 128
     # config['attention_keep_percent'] = 0.2
-    config['n_keep_attn'] = 1
+    config['n_keep_attn'] = 3
     
     # config['optimizer_name'] = 'GA' # Binary Genetic Algorithm
     # config['optimizer_name'] = 'PSO' # Binary Particle Swarm Optimization

@@ -30,6 +30,27 @@ def get_activation(name):
         activation[name] = output
     return hook
 
+class CustomDataset(Dataset):
+    def __init__(self, metadata, metadata_prev, gt):
+        super(CustomDataset, self).__init__()
+        self.metadata = metadata
+        self.metadata_prev = metadata_prev
+        self.gt = gt
+        
+    def __len__(self):
+        return self.metadata.shape[0]
+    
+    def __getitem__(self, idx):        
+        return self.metadata[idx, :], self.metadata_prev[idx, :], self.gt[idx]
+
+class Norm(nn.Module):
+    def __init__(self, embedding_dim):
+        super(Norm, self).__init__()
+        self.norm = nn.LayerNorm(embedding_dim)
+ 
+    def forward(self, x):
+        return self.norm(x)
+
 class ScaledDotProductAttention(nn.Module):
     """
     Scaled Dot-Product Attention proposed in "Attention Is All You Need"
@@ -64,29 +85,8 @@ class ScaledDotProductAttention(nn.Module):
         context = torch.bmm(attn, value)
         return context, attn
 
-class Norm(nn.Module):
-    def __init__(self, embedding_dim):
-        super(Norm, self).__init__()
-        self.norm = nn.LayerNorm(embedding_dim)
- 
-    def forward(self, x):
-        return self.norm(x)
-
-class CustomDataset(Dataset):
-    def __init__(self, metadata, metadata_prev, gt):
-        super(CustomDataset, self).__init__()
-        self.metadata = metadata
-        self.metadata_prev = metadata_prev
-        self.gt = gt
-        
-    def __len__(self):
-        return self.metadata.shape[0]
-    
-    def __getitem__(self, idx):        
-        return self.metadata[idx, :], self.metadata_prev[idx, :], self.gt[idx]
-
 class TransformerDecoder(nn.Module):
-    def __init__(self, n_cls, n_clfs_prev, n_clfs, embedding_dim=64, ff_dim=64, dropout=0.8):
+    def __init__(self, n_cls, n_clfs_prev, n_clfs, embedding_dim=64, ff_dim=64, dropout=0.2):
         super(TransformerDecoder, self).__init__()
         
         self.n_cls = n_cls
@@ -95,12 +95,16 @@ class TransformerDecoder(nn.Module):
         self.embedding_dim = embedding_dim
         self.ff_dim = ff_dim
         
-        self.ff_prev = nn.Linear(n_cls, embedding_dim)
+        self.ff_prev_key = nn.Linear(n_cls, embedding_dim)
+        self.ff_prev_value = nn.Linear(n_cls, embedding_dim)
         self.ff_curr = nn.Linear(n_cls, embedding_dim)        
         self.encoder_attention = ScaledDotProductAttention(embedding_dim)
         # self.ff_temp = nn.Linear(n_clfs*(n_clfs_prev+n_cls), embedding_dim)
         # self.ff_temp = nn.Linear(n_clfs*(n_clfs_prev+embedding_dim), embedding_dim)
-        self.ff_temp = nn.Linear(n_clfs*(n_clfs_prev+embedding_dim), n_cls)
+        # self.ff_temp = nn.Linear(n_clfs*(n_clfs_prev+embedding_dim), n_cls)
+        
+        self.ff_temp = nn.Linear(n_clfs*embedding_dim, n_cls)
+        
         
     def forward(self, metadata, metadata_prev):
         # metadata_prev_ff = self.ff_prev(metadata_prev)
@@ -111,12 +115,14 @@ class TransformerDecoder(nn.Module):
         # x1 = x1.view(-1, self.n_clfs*(self.n_cls+self.n_clfs_prev))
         # x4 = self.ff_temp(x1)
         
-        metadata_prev_ff = self.ff_prev(metadata_prev)
+        metadata_prev_ff_key = self.ff_prev_key(metadata_prev)
+        metadata_prev_ff_value = self.ff_prev_value(metadata_prev)
         metadata_ff = self.ff_curr(metadata)        
-        context, attn = self.encoder_attention(metadata_ff, metadata_prev_ff, metadata_prev_ff)        
+        context, attn = self.encoder_attention(metadata_ff, metadata_prev_ff_key, metadata_prev_ff_value)        
         x1 = metadata_ff + context
-        x1 = torch.cat((context, attn), dim=2)
-        x1 = x1.view(-1, self.n_clfs*(self.embedding_dim+self.n_clfs_prev))
+        # x1 = torch.cat((context, attn), dim=2)
+        # x1 = x1.view(-1, self.n_clfs*(self.embedding_dim+self.n_clfs_prev))
+        x1 = x1.view(-1, self.n_clfs*self.embedding_dim)
         x4 = self.ff_temp(x1)
         # set_trace()
         return (x4, attn)

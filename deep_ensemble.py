@@ -168,18 +168,18 @@ class DeepEnsemble:
                 (X_train_curr, X_val_curr, _) = current_layer.run(
                     X_train_in, y_train, X_val_in, y_val, X_train, X_val, enc)
 
-                np.savetxt(
-                    pjoin("result", self.dataset_name, "metadata_prev_layer_%d.txt" % (layer_idx)),
-                    X_train_in, fmt="%.6f", delimiter=",",
-                )
-                np.savetxt(
-                    pjoin("result", self.dataset_name, "metadata_layer_%d.txt" % (layer_idx)),
-                    X_train_curr, fmt="%.6f", delimiter=",",
-                )
-                np.savetxt(
-                    pjoin("result", self.dataset_name, "gt_layer_%d.txt" % (layer_idx)),
-                    y_train, fmt="%.6f", delimiter=",",
-                )
+                # np.savetxt(
+                    # pjoin("result", self.dataset_name, "metadata_prev_layer_%d.txt" % (layer_idx)),
+                    # X_train_in, fmt="%.6f", delimiter=",",
+                # )
+                # np.savetxt(
+                    # pjoin("result", self.dataset_name, "metadata_layer_%d.txt" % (layer_idx)),
+                    # X_train_curr, fmt="%.6f", delimiter=",",
+                # )
+                # np.savetxt(
+                    # pjoin("result", self.dataset_name, "gt_layer_%d.txt" % (layer_idx)),
+                    # y_train, fmt="%.6f", delimiter=",",
+                # )
                 
                 attn_score, train_loss_list, val_loss_list = run_transformer_decoder(X_train_in, X_train_curr, y_train,
                     n_cls, n_clfs_prev, n_clfs, n_epoch=config['attention_n_epoch'], batch_size=config['attention_batch_size'])

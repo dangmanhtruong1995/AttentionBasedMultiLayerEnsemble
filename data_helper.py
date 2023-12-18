@@ -2,7 +2,7 @@
 # data_folder = r'E:\Hoctap\Paperwork\DATA_FULL\train1_val_test'
 # data_folder = '/truong-gluon/datasets/small_data'
 # data_folder = r'C:\Home-TD100038\truong-gluon\datasets\small_data'
-data_folder = r'C:\TRUONG\PhD_projects\Optimal_Connection_Paper_2023\train1_val_test\train1_val_test'
+data_folder = r'C:\TRUONG\PhD-code\OptimalConnectionPaper2023\Code\train1_val_test'
 #file_list = ["balance"]
 # file_list = ["iris"]
 #file_list = ['abalone']
@@ -15,7 +15,7 @@ file_list = [
   'tae','tic-tac-toe','titanic_new','twonorm1','vehicle','wdbc','wine', \
   'biodeg','blood','Breast-Tissue', \
   'conn-bench-vowel',\
-  'isolet','libras','madelon', \
+  'libras','madelon', \
   'multiple-features','musk1','musk2',  
   'texture', 
   'vertebral_3C','waveform_w_noise','waveform_wo_noise','appendicitis','mammographic', \
@@ -32,6 +32,8 @@ file_list = [
   "satimage",  
   'magic','penbased_new_fix','shuttle', 
   'wine_red','wine_white', 
+  'iris',
+  'isolet',
   'letter',
   'chess-krvk',
   'Skin_NonSkin',

@@ -1,4 +1,4 @@
-# AttentionBasedMultiLayerEnsembleNoEvolution
+# AttentionBasedMultiLayerEnsemble
 Code for the paper: "Ensemble selection for multi-layer ensembles based on
 the attention mechanism", by Truong Dang, Tien Thanh Nguyen, Trung Hieu Vu, John McCall and Eyad Elyan. 
 
@@ -9,6 +9,8 @@ How to run:
 * Set paths to dataset in data\_helper.py
 
 * Set parameters in run.py 
+
+* Create the 'result' folder in the current directory
 
 * Run: python run.py
 

@@ -2,7 +2,8 @@
 # data_folder = r'E:\Hoctap\Paperwork\DATA_FULL\train1_val_test'
 # data_folder = '/truong-gluon/datasets/small_data'
 # data_folder = r'C:\Home-TD100038\truong-gluon\datasets\small_data'
-data_folder = r'C:\TRUONG\PhD-code\OptimalConnectionPaper2023\Code\train1_val_test'
+# data_folder = r'C:\TRUONG\PhD-code\OptimalConnectionPaper2023\Code\train1_val_test'
+data_folder = '/home/researcher/Desktop/TRUONG/datasets/train1_val_test'
 #file_list = ["balance"]
 # file_list = ["iris"]
 #file_list = ['abalone']
